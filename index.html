@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case #0210: The Unwritten Wish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:wght@400;600;700&family=Cinzel:wght@600;800;900&family=Pirata+One&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: #050506;
+            color: #F2F0E6;
+            overflow: hidden;
+        }
+
+        /* === Global cinematic atmosphere (applies to EVERY step) === */
+        #bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                linear-gradient(rgba(8, 8, 10, 0.48), rgba(5, 5, 7, 0.62)),
+                url('image%201.jpeg') center/cover no-repeat;
+            filter: saturate(0.9) contrast(1.05) brightness(1.25);
+        }
+
+        #vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 1498;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 48%, rgba(0, 0, 0, 0.4) 80%, rgba(0, 0, 0, 0.78) 100%);
+        }
+
+        #grain {
+            position: fixed;
+            inset: -60%;
+            z-index: 1499;
+            pointer-events: none;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            animation: grainShift 0.5s steps(3) infinite;
+        }
+
+        @keyframes grainShift {
+            0% { transform: translate(0, 0); }
+            33% { transform: translate(-5%, 3%); }
+            66% { transform: translate(4%, -4%); }
+            100% { transform: translate(-3%, 2%); }
+        }
+
+        #flicker {
+            position: fixed;
+            inset: 0;
+            z-index: 1497;
+            pointer-events: none;
+            background: radial-gradient(ellipse at 50% 60%, rgba(229, 9, 20, 0.07), transparent 70%);
+            opacity: 0;
+            animation: redFlicker 9s infinite;
+        }
+
+        @keyframes redFlicker {
+            0%, 94%, 100% { opacity: 0; }
+            95% { opacity: 0.6; }
+            96% { opacity: 0.1; }
+            97% { opacity: 0.85; }
+            98% { opacity: 0.2; }
+        }
+
+        /* Rain Canvas Background */
+        #rain-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Audio Toggle Button */
+        .audio-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1601;
+            background: rgba(229, 9, 20, 0.8);
+            border: 2px solid #E50914;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.5);
+        }
+
+        .audio-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(229, 9, 20, 0.8);
+        }
+
+        .audio-toggle.muted {
+            background: rgba(20, 20, 22, 0.8);
+            border-color: #666;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            align-items: safe center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Step Containers */
+        .step {
+            display: none;
+            opacity: 0;
+            transform: translateY(30px);
+            max-width: 800px;
+            width: 100%;
+            animation: fadeSlideIn 0.8s ease forwards;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeSlideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Death Note Card Styling */
+        .death-note-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #141416 100%);
+            border: 3px solid #E50914;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(229, 9, 20, 0.3),
+                        inset 0 0 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .death-note-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(229, 9, 20, 0.1) 0%, transparent 70%);
+            animation: breathe 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Paper Card for Clues */
+        .paper-card {
+            background: #F2F0E6;
+            color: #141416;
+            border: 2px solid #8B4513;
+            border-radius: 5px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
+                        inset 0 0 100px rgba(139, 69, 19, 0.1);
+            position: relative;
+            font-family: 'Special Elite', monospace;
+        }
+
+        .paper-card::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(229, 9, 20, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* Typography */
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            font-size: 2.4em;
+            color: #E50914;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 14px rgba(229, 9, 20, 0.55);
+            letter-spacing: 3px;
+        }
+
+        h2 {
+            font-family: 'Special Elite', monospace;
+            font-size: 1.8em;
+            color: #E50914;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .typewriter {
+            font-size: 1.3em;
+            line-height: 1.8;
+            margin: 20px 0;
+            min-height: 100px;
+        }
+
+        /* Input Fields */
+        .input-group {
+            margin: 25px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            font-family: 'Special Elite', monospace;
+            background: rgba(242, 240, 230, 0.9);
+            border: 2px solid #8B4513;
+            border-radius: 5px;
+            color: #141416;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #E50914;
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.3);
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #E50914 0%, #b00710 100%);
+            color: #F2F0E6;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-family: 'Special Elite', monospace;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(229, 9, 20, 0.4);
+            position: relative;
+            overflow: hidden;
+            z-index: 200;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(229, 9, 20, 0.6);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Choice Buttons */
+        .choice-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+            position: relative;
+            z-index: 100;
+        }
+
+        .choice-btn {
+            background: rgba(229, 9, 20, 0.1);
+            border: 2px solid #E50914;
+            color: #F2F0E6;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-family: 'Crimson Text', serif;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 101;
+        }
+
+        .choice-btn:hover {
+            background: rgba(229, 9, 20, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .choice-btn.correct {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #0f0;
+        }
+
+        .choice-btn.wrong {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #f00;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Memory Vault Photo Cards */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .photo-card {
+            background: #1a1a1a;
+            border: 3px solid #E50914;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: grab;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .photo-card:active {
+            cursor: grabbing;
+        }
+
+        .photo-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .photo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(229, 9, 20, 0.2) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .photo-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .photo-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(229, 9, 20, 0.5);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: contain;
+            object-position: center;
+            background: #000;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            pointer-events: none;
+        }
+
+        .photo-caption {
+            text-align: center;
+            font-size: 1.1em;
+            color: #F2F0E6;
+            font-family: 'Special Elite', monospace;
+            pointer-events: none;
+        }
+
+        .order-number {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: #E50914;
+            color: #F2F0E6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: 'Special Elite', monospace;
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.8);
+            z-index: 10;
+        }
+
+        .memory-instruction {
+            text-align: center;
+            font-size: 1.1em;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(229, 9, 20, 0.1);
+            border: 2px solid #E50914;
+            border-radius: 5px;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border: 5px solid #E50914;
+            border-radius: 10px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            font-size: 40px;
+            color: #E50914;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .lightbox-caption {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.3em;
+            color: #F2F0E6;
+        }
+
+        /* Shinigami Avatar */
+        .shinigami-avatar {
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            border-radius: 50%;
+            border: 4px solid #E50914;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 0 30px rgba(229, 9, 20, 0.5);
+        }
+
+        .shinigami-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+        }
+
+        .shinigami-avatar::before,
+        .shinigami-avatar::after {
+            content: '👁️';
+            position: absolute;
+            font-size: 40px;
+            animation: eyeGlow 2s ease-in-out infinite;
+        }
+
+        .shinigami-avatar::before {
+            left: 50px;
+        }
+
+        .shinigami-avatar::after {
+            right: 50px;
+        }
+
+        @keyframes eyeGlow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 5px red);
+                opacity: 0.8;
+            }
+            50% { 
+                filter: drop-shadow(0 0 20px red);
+                opacity: 1;
+            }
+        }
+
+        /* Dialogue Box */
+        .dialogue-box {
+            background: rgba(20, 20, 22, 0.95);
+            border: 2px solid #E50914;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            font-size: 1.2em;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+            color: #F2F0E6;
+        }
+
+        .dialogue-box p,
+        .dialogue-box .typewriter {
+            color: #F2F0E6;
+        }
+
+        .dialogue-box::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-size: 80px;
+            color: #E50914;
+            opacity: 0.3;
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #E50914;
+            position: absolute;
+            animation: confettiFall 3s linear infinite;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Flash Effect */
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .flash {
+            animation: flash 0.3s ease-in-out 3;
+        }
+
+        /* Stamp Effect */
+        .stamp {
+            display: inline-block;
+            color: #E50914;
+            font-size: 1.5em;
+            font-weight: bold;
+            transform: rotate(-15deg);
+            border: 3px solid #E50914;
+            padding: 10px 20px;
+            margin: 20px auto;
+            text-align: center;
+            animation: stampIn 0.5s ease-out;
+        }
+
+        @keyframes stampIn {
+            0% {
+                transform: scale(0) rotate(-15deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(-15deg);
+            }
+            100% {
+                transform: scale(1) rotate(-15deg);
+                opacity: 1;
+            }
+        }
+
+        /* Classified Evidence File Card */
+        .classified-file {
+            background: linear-gradient(135deg, #0d0d0f 0%, #16080a 100%);
+            border: 2px solid #E50914;
+            border-radius: 8px;
+            margin: 20px 0 10px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+                        0 0 40px rgba(229, 9, 20, 0.25);
+            animation: fileDropIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fileDropIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-90px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .classified-header {
+            background: repeating-linear-gradient(
+                45deg,
+                #E50914,
+                #E50914 12px,
+                #b00710 12px,
+                #b00710 24px
+            );
+            color: #fff;
+            font-family: 'Special Elite', monospace;
+            font-size: 1.05em;
+            letter-spacing: 1px;
+            padding: 14px 20px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+            font-weight: bold;
+        }
+
+        .classified-body {
+            padding: 30px;
+        }
+
+        .classified-intro {
+            font-style: italic;
+            color: #c9c6ba;
+            margin-bottom: 25px;
+            min-height: 1.6em;
+            font-size: 1.15em;
+        }
+
+        .record-field {
+            font-family: 'Special Elite', monospace;
+            font-size: 1em;
+            color: #ff6b6b;
+            margin: 8px 0;
+            letter-spacing: 1px;
+        }
+
+        .record-field .field-label {
+            color: #8a8a8a;
+        }
+
+        .classified-main {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(229, 9, 20, 0.06);
+            border-left: 4px solid #E50914;
+            line-height: 1.9;
+            font-size: 1.15em;
+            color: #F2F0E6;
+        }
+
+        .classified-stamp {
+            position: absolute;
+            top: 58px;
+            right: 25px;
+            transform: rotate(-18deg);
+            border: 3px solid rgba(229, 9, 20, 0.55);
+            color: rgba(229, 9, 20, 0.55);
+            padding: 6px 14px;
+            font-family: 'Special Elite', monospace;
+            font-weight: bold;
+            font-size: 1em;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        .case-record {
+            font-family: 'Special Elite', monospace;
+            color: #d8d5c8;
+            line-height: 1.9;
+            font-size: 1.08em;
+        }
+
+        .case-record p {
+            margin: 16px 0;
+        }
+
+        .case-record .case-highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.4);
+        }
+
+        .case-record .case-question {
+            margin-top: 24px;
+            padding: 18px 16px;
+            font-size: 1.25em;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            background: rgba(229, 9, 20, 0.12);
+            border: 2px solid #E50914;
+            border-radius: 6px;
+            text-shadow: 0 0 15px rgba(229, 9, 20, 0.8);
+            animation: pulseGlow 2.5s ease-in-out infinite;
+        }
+
+        /* Encrypted Secret-Code Panel (Clue #01 Stage 2) */
+        .encrypted-panel {
+            background: radial-gradient(circle at 50% 0%, rgba(229, 9, 20, 0.14), rgba(8, 8, 10, 0.98));
+            border: 2px solid #E50914;
+            border-radius: 10px;
+            padding: 30px 25px 35px;
+            margin: 25px 0;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 30px rgba(229, 9, 20, 0.4), inset 0 0 40px rgba(229, 9, 20, 0.08);
+            animation: panelPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes panelPulse {
+            0%, 100% { box-shadow: 0 0 25px rgba(229, 9, 20, 0.35), inset 0 0 40px rgba(229, 9, 20, 0.06); }
+            50% { box-shadow: 0 0 55px rgba(229, 9, 20, 0.7), inset 0 0 50px rgba(229, 9, 20, 0.12); }
+        }
+
+        .encrypted-panel.unlocking {
+            animation: unlockFlash 0.9s ease-out forwards;
+            border-color: #0f0;
+        }
+
+        @keyframes unlockFlash {
+            0% { transform: scale(1); box-shadow: 0 0 30px rgba(229, 9, 20, 0.6); border-color: #E50914; }
+            40% { transform: scale(1.04); box-shadow: 0 0 90px rgba(0, 255, 0, 0.85); border-color: #0f0; }
+            100% { transform: scale(1); box-shadow: 0 0 40px rgba(0, 255, 0, 0.5); border-color: #0f0; }
+        }
+
+        .access-locked {
+            display: inline-block;
+            font-family: 'Special Elite', monospace;
+            color: #ff4d4d;
+            letter-spacing: 2px;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        .lock-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #ff2d2d;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+            box-shadow: 0 0 10px #ff2d2d;
+            animation: blink 1s steps(2) infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.15; }
+        }
+
+        .encrypted-title {
+            font-size: 1.4em;
+            color: #E50914;
+            margin-bottom: 18px;
+            text-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
+        }
+
+        .encrypted-brief {
+            font-family: 'Special Elite', monospace;
+            color: #d8d5c8;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .encrypted-brief p { margin: 10px 0; }
+
+        .encrypted-brief .encrypted-emphasis {
+            color: #ff6b6b;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+        }
+
+        .secret-code-title {
+            font-size: 1.6em;
+            color: #fff;
+            letter-spacing: 2px;
+            margin: 10px 0 18px;
+            text-shadow: 0 0 20px rgba(229, 9, 20, 0.9);
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .terminal-line {
+            font-family: 'Special Elite', monospace;
+            color: #ff6b6b;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .blink-cursor {
+            display: inline-block;
+            color: #E50914;
+            font-weight: bold;
+            animation: blink 1s steps(2) infinite;
+        }
+
+        .secret-input {
+            width: 100%;
+            max-width: 420px;
+            padding: 16px;
+            font-size: 1.3em;
+            font-family: 'Special Elite', monospace;
+            text-align: center;
+            letter-spacing: 4px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #E50914;
+            border-radius: 6px;
+            color: #ff6b6b;
+            text-transform: uppercase;
+            box-shadow: inset 0 0 20px rgba(229, 9, 20, 0.3), 0 0 15px rgba(229, 9, 20, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .secret-input::placeholder {
+            color: rgba(255, 107, 107, 0.4);
+            letter-spacing: 2px;
+        }
+
+        .secret-input:focus {
+            outline: none;
+            border-color: #ff2d2d;
+            box-shadow: inset 0 0 25px rgba(229, 9, 20, 0.5), 0 0 30px rgba(229, 9, 20, 0.7);
+        }
+
+        .btn-unlock {
+            margin-top: 25px;
+        }
+
+        .evidence-status {
+            margin-top: 22px;
+            text-align: center;
+            font-family: 'Special Elite', monospace;
+            color: #5fff5f;
+            letter-spacing: 2px;
+            font-size: 1.1em;
+            text-shadow: 0 0 12px rgba(0, 255, 0, 0.6);
+        }
+
+        /* Error/Success Messages */
+        .message {
+            text-align: center;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+
+        .error-message {
+            background: rgba(229, 9, 20, 0.2);
+            border: 2px solid #E50914;
+            color: #ff6b6b;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #0f0;
+            color: #5fff5f;
+        }
+
+        /* Final Reveal */
+        .reveal-text {
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            font-size: 2.6em;
+            text-align: center;
+            color: #E50914;
+            letter-spacing: 2px;
+            text-shadow: 0 0 30px rgba(229, 9, 20, 0.8);
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 40px rgba(229, 9, 20, 1);
+            }
+        }
+
+        .birthday-message {
+            font-size: 1.4em;
+            line-height: 2;
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: rgba(229, 9, 20, 0.1);
+            border-radius: 10px;
+            border: 2px solid #E50914;
+        }
+
+        .birthday-photo {
+            margin: 40px auto 10px;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        .birthday-photo img {
+            width: 100%;
+            border: 4px solid #E50914;
+            border-radius: 12px;
+            box-shadow: 0 0 35px rgba(229, 9, 20, 0.6);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .birthday-photo img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 50px rgba(229, 9, 20, 0.9);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .death-note-card,
+            .paper-card {
+                padding: 25px;
+            }
+
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .choice-buttons {
+                flex-direction: column;
+            }
+
+            .shinigami-avatar {
+                width: 150px;
+                height: 150px;
+                font-size: 70px;
+            }
+
+            .reveal-text {
+                font-size: 2em;
+            }
+        }
+
+        /* Clue #02 — result badge anchored on image 3 */
+        .photo-result-overlay {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            z-index: 60;
+            pointer-events: none;
+        }
+
+        .photo-result-overlay .success-message,
+        .photo-result-overlay .error-message {
+            margin: 0;
+            padding: 12px 10px;
+            font-size: 0.95em;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.85);
+        }
+
+        .photo-result-overlay .error-message {
+            background: rgba(60, 5, 8, 0.92);
+            border: 2px solid #E50914;
+            color: #ff8080;
+        }
+
+        .photo-result-overlay .success-message {
+            background: rgba(5, 45, 5, 0.9);
+            border: 2px solid #0f0;
+            color: #7dff7d;
+        }
+
+        /* Step 6 — Case Closed */
+        .case-closed-meta {
+            font-family: 'Special Elite', monospace;
+            line-height: 2;
+            font-size: 1.1em;
+            color: #F2F0E6;
+        }
+
+        .case-closed-meta .field-label {
+            color: #8a8a8a;
+            letter-spacing: 1px;
+        }
+
+        /* Step 7 — The Final Page (Death Note page) */
+        .death-note-page {
+            background: linear-gradient(180deg, #0c0c0e 0%, #120a0b 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 6px;
+            padding: clamp(18px, 3vh, 32px);
+            font-family: 'Special Elite', monospace;
+            position: relative;
+            box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.85), 0 0 30px rgba(229, 9, 20, 0.2);
+        }
+
+        .death-note-page::before {
+            content: "DEATH NOTE";
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 0.72em;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.22);
+        }
+
+        .dn-title {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            font-size: clamp(1.6em, 3.6vh, 2.4em);
+            color: #E50914;
+            letter-spacing: 3px;
+            margin-bottom: clamp(12px, 2vh, 20px);
+            text-shadow: 0 0 15px rgba(229, 9, 20, 0.6);
+        }
+
+        .dn-entry { margin: clamp(8px, 1.5vh, 15px) 0; }
+        .dn-label { color: #8a8a8a; letter-spacing: 2px; font-size: 0.85em; margin-bottom: 3px; }
+        .dn-value { color: #F2F0E6; font-size: clamp(0.95em, 2vh, 1.12em); line-height: 1.5; }
+        .dn-effect-list { color: #d8d5c8; line-height: 1.7; }
+
+        .dn-status {
+            text-align: center;
+            font-family: 'Pirata One', 'Cinzel', serif;
+            font-size: clamp(1.8em, 4.4vh, 2.9em);
+            color: #ff1e2d;
+            margin: clamp(12px, 2.2vh, 22px) 0;
+            text-shadow: 0 0 25px rgba(229, 9, 20, 0.9);
+            animation: pulseGlow 2s ease-in-out infinite;
+            letter-spacing: 2px;
+        }
+
+        .dn-fine {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        /* Step 8 — Final Birthday Card (compact, no-scroll) */
+        #step8 .death-note-card {
+            display: flex;
+            flex-direction: column;
+            max-height: 94vh;
+            padding: clamp(16px, 3vh, 34px) clamp(18px, 3vw, 40px);
+        }
+
+        .birthday-title {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            letter-spacing: 2px;
+            font-size: clamp(1.4em, 3.4vh, 2.3em);
+            margin-bottom: clamp(8px, 1.6vh, 18px);
+        }
+
+        #step8 .birthday-message {
+            font-size: clamp(0.82em, 1.85vh, 1.08em);
+            line-height: 1.5;
+            padding: clamp(12px, 2vh, 22px);
+            margin: 0 0 clamp(10px, 1.6vh, 16px);
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        #step8 .birthday-photo {
+            margin: 0 auto clamp(8px, 1.4vh, 14px);
+            max-width: none;
+            flex-shrink: 0;
+        }
+
+        #step8 .birthday-photo img {
+            max-height: clamp(130px, 24vh, 240px);
+            max-width: 260px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .birthday-closing {
+            text-align: center;
+            color: #E50914;
+            font-family: 'Special Elite', monospace;
+            font-size: clamp(1.1em, 2.3vh, 1.6em);
+            text-shadow: 0 0 15px rgba(229, 9, 20, 0.6);
+        }
+
+        .birthday-end {
+            text-align: center;
+            color: #8a8a8a;
+            letter-spacing: 4px;
+            font-family: 'Special Elite', monospace;
+            font-size: 0.8em;
+            margin-top: clamp(6px, 1.2vh, 12px);
+        }
+
+        .final-file-header {
+            text-align: center;
+            margin-bottom: clamp(6px, 1.4vh, 14px);
+        }
+
+        .ff-meta {
+            font-family: 'Special Elite', monospace;
+            color: #8a8a8a;
+            font-size: clamp(0.62em, 1.4vh, 0.78em);
+            letter-spacing: 1px;
+        }
+
+        .birthday-infinity {
+            text-align: center;
+            color: #E50914;
+            font-size: clamp(1.2em, 2.6vh, 1.8em);
+            text-shadow: 0 0 18px rgba(229, 9, 20, 0.8);
+            margin-top: 2px;
+            animation: pulseGlow 2.5s ease-in-out infinite;
+        }
+
+        /* Short-viewport (laptop) tuning — shrink instead of scroll */
+        @media (max-height: 820px) {
+            h1 { font-size: 1.9em; margin-bottom: 16px; }
+            h2 { font-size: 1.5em; margin-bottom: 14px; }
+            .death-note-card, .paper-card { padding: 22px; }
+            .dialogue-box { padding: 15px; margin: 14px 0; font-size: 1.05em; }
+            .dialogue-box::before { font-size: 60px; top: -14px; }
+            .case-record { font-size: 1em; line-height: 1.6; }
+            .case-record p { margin: 10px 0; }
+            .case-record .case-question { font-size: 1.1em; padding: 12px; margin-top: 16px; }
+            .encrypted-panel { padding: 18px 18px 22px; margin: 14px 0; }
+            .encrypted-title { font-size: 1.15em; margin-bottom: 12px; }
+            .encrypted-brief { margin-bottom: 16px; line-height: 1.55; font-size: 0.95em; }
+            .encrypted-brief p { margin: 7px 0; }
+            .secret-code-title { font-size: 1.3em; margin: 8px 0 12px; }
+            .secret-input { padding: 12px; font-size: 1.15em; }
+            .classified-main { font-size: 1em; line-height: 1.55; padding: 15px; margin-top: 16px; }
+            .record-field { font-size: 0.95em; margin: 6px 0; }
+            .btn { padding: 12px 32px; margin: 18px auto; font-size: 1.1em; }
+            .reveal-text { font-size: 2.1em; }
+            .birthday-message { font-size: 1.05em; line-height: 1.55; padding: 18px; margin: 18px 0; }
+            .birthday-photo { max-width: 230px; margin: 16px auto 6px; }
+            .evidence-status { margin-top: 14px; font-size: 1em; }
+        }
+
+        /* === Death Note aesthetic — shared cinematic elements === */
+
+        /* Shinigami character figure (replaces emoji avatar) */
+        .shinigami-figure {
+            width: clamp(150px, 26vh, 230px);
+            margin: 18px auto;
+            border: 3px solid #E50914;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 45px rgba(229, 9, 20, 0.45), inset 0 0 30px rgba(0, 0, 0, 0.6);
+            animation: floatSlow 6s ease-in-out infinite;
+            position: relative;
+        }
+
+        .shinigami-figure img { width: 100%; display: block; }
+
+        .shinigami-figure::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+            pointer-events: none;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Step 7 — split-screen judgment */
+        .judgment-split {
+            display: grid;
+            grid-template-columns: 1.25fr 0.9fr;
+            gap: 22px;
+            align-items: stretch;
+        }
+
+        .judgment-shinigami {
+            border: 2px solid #3a3a3a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(229, 9, 20, 0.2);
+            background: #0a0a0c;
+            position: relative;
+            animation: floatSlow 7s ease-in-out infinite;
+        }
+
+        .judgment-shinigami img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            display: block;
+            filter: saturate(0.9) contrast(1.05);
+        }
+
+        @media (max-width: 760px) {
+            .judgment-split { grid-template-columns: 1fr; }
+            .judgment-shinigami { max-height: 32vh; }
+        }
+
+        /* Atmospheric shinigami for reveal scenes */
+        .scene-shinigami {
+            position: absolute;
+            bottom: 0;
+            right: -8px;
+            width: clamp(80px, 15vh, 140px);
+            opacity: 0.13;
+            pointer-events: none;
+            filter: grayscale(0.25) contrast(1.1);
+            animation: floatSlow 8s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        #investigation-complete {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Task Force header + step indicator */
+        .taskforce-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 18px;
+            font-family: 'Special Elite', monospace;
+            background: linear-gradient(180deg, rgba(6, 6, 8, 0.95), rgba(6, 6, 8, 0));
+            pointer-events: none;
+        }
+
+        .tf-id {
+            color: #ff6b6b;
+            letter-spacing: 2px;
+            font-size: 0.8em;
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+        }
+
+        .tf-steps { display: flex; gap: 7px; align-items: center; }
+
+        .tf-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #2a2a2e;
+            border: 1px solid #444;
+            transition: all 0.4s ease;
+        }
+
+        .tf-dot.done { background: #5a1016; border-color: #7a1a20; }
+
+        .tf-dot.active {
+            background: #E50914;
+            border-color: #E50914;
+            box-shadow: 0 0 12px rgba(229, 9, 20, 0.9);
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @media (max-width: 560px) {
+            .tf-id { font-size: 0.6em; letter-spacing: 1px; }
+            .tf-dot { width: 7px; height: 7px; }
+            .taskforce-header { padding: 8px 12px; }
+        }
+
+        /* Progressive reveal helpers (Step 5 / Step 7) */
+        .reveal-hidden { opacity: 0; transform: translateY(14px); }
+        .reveal-in { animation: revealUp 1s ease forwards; }
+
+        @keyframes revealUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-label {
+            text-align: center;
+            font-family: 'Special Elite', monospace;
+            letter-spacing: 4px;
+            color: #ff6b6b;
+            font-size: 0.9em;
+            margin-bottom: 14px;
+        }
+
+        .crimson-line {
+            width: 70%;
+            height: 2px;
+            margin: 0 auto 24px;
+            background: linear-gradient(90deg, transparent, #E50914, transparent);
+            box-shadow: 0 0 14px rgba(229, 9, 20, 0.8);
+            transform-origin: center;
+        }
+
+        .reveal-in.crimson-line { animation: lineGrow 1.1s ease forwards; }
+
+        @keyframes lineGrow {
+            from { transform: scaleX(0); opacity: 0; }
+            to { transform: scaleX(1); opacity: 1; }
+        }
+
+        .kira-final {
+            font-family: 'Pirata One', 'Cinzel', serif;
+            font-size: clamp(2.4em, 7vh, 4em) !important;
+            color: #ff1e2d;
+            letter-spacing: 2px;
+        }
+
+        /* Reduced motion accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001s !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.08s !important;
+            }
+            #grain, #flicker, .scene-shinigami { display: none; }
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cinematic background image layer -->
+    <div id="bg-layer" aria-hidden="true"></div>
+
+    <!-- Rain Canvas -->
+    <canvas id="rain-canvas"></canvas>
+
+    <!-- Atmospheric overlays (grain / vignette / red flicker) -->
+    <div id="flicker" aria-hidden="true"></div>
+    <div id="vignette" aria-hidden="true"></div>
+    <div id="grain" aria-hidden="true"></div>
+
+    <!-- Task Force Header -->
+    <header class="taskforce-header">
+        <div class="tf-id">TASK FORCE HEADQUARTERS // CASE #0210</div>
+        <div class="tf-steps" id="tf-steps" aria-hidden="true"></div>
+    </header>
+
+    <!-- Background Music -->
+    <audio id="bgm" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Audio Toggle -->
+    <div class="audio-toggle" id="audio-toggle" title="Toggle Sound">
+        🔊
+    </div>
+
+    <!-- STEP 1: Opening Page -->
+    <div class="container">
+        <div class="step active" id="step1">
+            <div class="death-note-card">
+                <h1>CASE #0210: THE UNWRITTEN WISH</h1>
+                <div class="typewriter" id="intro-text" style="text-align: center;"></div>
+
+                <button class="btn" id="enter-case">ENTER THE CASE 🩸</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Clue #01 - The Memory We Never Captured -->
+        <div class="step" id="step2">
+            <div class="death-note-card">
+                <h1>CLUE #01: THE MEMORY WE NEVER CAPTURED</h1>
+
+                <!-- STAGE 1: Recover the Memory -->
+                <div id="clue1-stage1">
+                    <div class="classified-file">
+                        <div class="classified-header">📁 CASE RECORD #001</div>
+                        <div class="classified-body">
+                            <div class="case-record">
+                                <p>No photograph exists.<br>
+                                No timestamp was saved.<br>
+                                No digital evidence remains.<br>
+                                Yet someone remembers.</p>
+
+                                <p class="case-highlight">And someone has hidden that memory behind a secret.</p>
+
+                                <p class="case-question">What was the first gift Christy chose for Raajiv after they became friends?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group" id="clue1-answer-group">
+                        <label for="memory-answer">ENTER YOUR ANSWER:</label>
+                        <input type="text" id="memory-answer" placeholder="Type your answer...">
+                    </div>
+
+                    <div id="clue1-message"></div>
+
+                    <button class="btn" id="verify-memory">VERIFY MEMORY</button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SCENE: RJ SECRET CODE -->
+        <div class="step" id="step2secret">
+            <div class="death-note-card">
+                <div class="dialogue-box">
+                    <div class="typewriter" id="stage2-intro"></div>
+                </div>
+
+                <div class="encrypted-panel" id="encrypted-panel">
+                    <div class="access-locked"><span class="lock-dot"></span> ACCESS LOCKED</div>
+
+                    <h2 class="encrypted-title">🔐 THE MEMORY IS ONLY HALF THE CASE</h2>
+
+                    <div class="encrypted-brief">
+                        <p class="encrypted-emphasis">NEXT FILE DETECTED</p>
+                        <p>The first memory has been recovered.</p>
+                        <p>But the important part was never the memory itself.</p>
+                        <p>Someone left a second layer of protection.</p>
+                        <p class="encrypted-emphasis">Hint : Our code to keep anything secret between us.</p>
+                    </div>
+
+                    <h2 class="secret-code-title">🔐 ENTER THE SECRET CODE</h2>
+
+                    <div class="terminal-line">&gt; AWAITING SECRET CODE <span class="blink-cursor">▮</span></div>
+
+                    <input type="text" id="secret-code" class="secret-input" placeholder="ENTER SECRET CODE" autocomplete="off">
+
+                    <div id="decrypt-message"></div>
+
+                    <button class="btn btn-unlock" id="decrypt-file">UNLOCK THE EVIDENCE 🔓</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE: DECRYPTED EVIDENCE -->
+        <div class="step" id="step2decrypt">
+            <div class="death-note-card">
+                <div class="stamp" style="border-color: #0f0; color: #5fff5f;">🔓 SECRET CODE VERIFIED</div>
+
+                <div class="dialogue-box">
+                    <div class="typewriter" id="unlock-intro"></div>
+                </div>
+
+                <div class="classified-file">
+                    <div class="classified-header">🔓 CLASSIFIED FILE #001 — STATUS: DECRYPTED</div>
+                    <div class="classified-body">
+                        <div class="classified-main">
+                            The lock has been broken.
+                            <br><br>
+                            What looked like an ordinary day of shopping became one of those small moments that quietly stays with you.
+                            <br><br>
+                            Later came a <strong style="color: #ff6b6b;">bike ride — and a really good conversation.</strong>
+                            <br><br>
+                            Somewhere along that ride, between the random talks, laughs, and everything in between, <strong style="color: #ff6b6b;">we started getting to know each other for real.</strong>
+                            <br><br>
+                            No photograph captured that moment.<br>
+                            No message recorded the conversation.
+                            <br><br>
+                            But some memories don't need proof.
+                            <br><br>
+                            <strong style="color: #ff6b6b;">They become special simply because of what they meant.</strong>
+                            <br><br>
+                            And this was only the beginning.
+                            <br><br>
+                            <strong style="color: #ff6b6b;">Somewhere in these memories, the answer is waiting.</strong>
+                        </div>
+                        <div class="evidence-status">EVIDENCE STATUS: DECRYPTED ✓</div>
+                    </div>
+                </div>
+
+                <button class="btn" id="to-vault">CONTINUE INVESTIGATION →</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Memory Vault -->
+        <div class="step" id="step3">
+            <div class="death-note-card">
+                <h1>CLUE #02: THE MEMORY VAULT</h1>
+                
+                <div class="dialogue-box">
+                    <p style="font-size: 1.2em; text-align: center; line-height: 1.7;">
+                        Three memories.<br>
+                        Three moments that should have remained ordinary.<br>
+                        But the Task Force has detected a pattern.<br><br>
+                        Arrange them from <strong style="color:#ff6b6b;">FIRST → LAST</strong>.<br>
+                        The order may reveal what you are looking for.
+                    </p>
+                </div>
+
+                <div class="memory-instruction">
+                    💡 Drag and drop the photos to reorder them
+                </div>
+
+                <div class="photo-grid" id="sortable-photos">
+                    <div class="photo-card" draggable="true" data-memory="concert">
+                        <div class="order-number">1</div>
+                        <img src="AR_Concert.jpeg" alt="Memory 1">
+                    </div>
+
+                    <div class="photo-card" draggable="true" data-memory="holi">
+                        <div class="order-number">2</div>
+                        <img src="Holi.jpeg" alt="Memory 2">
+                    </div>
+
+                    <div class="photo-card" draggable="true" data-memory="pind">
+                        <div class="order-number">3</div>
+                        <img src="PIND.jpeg" alt="Memory 3">
+                    </div>
+                </div>
+
+                <button class="btn" id="check-order">CHECK MY ORDER</button>
+
+            </div>
+        </div>
+
+        <!-- STEP 3 REVEAL: Memories Unlocked -->
+        <div class="step" id="step3reveal">
+            <div class="death-note-card">
+                <div class="stamp">MEMORIES UNLOCKED!</div>
+
+                <div class="dialogue-box" style="margin-top: 30px;">
+                    <h3 style="color: #E50914; margin-bottom: 15px;">🍽️ Pind Fine Dining</h3>
+                    <p>First dining experience after endless local food runs. Average food, but unforgettable conversations with the best. 🍽️🖤</p>
+                </div>
+
+                <div class="dialogue-box">
+                    <h3 style="color: #E50914; margin-bottom: 15px;">🎵 AR Rahman Concert</h3>
+                    <p>First person I thought of when I got the tickets. Same music taste, same crazy energy, and the legendary night I saw you dance for the first time. Such a core memory! 🖤✨</p>
+                </div>
+
+                <div class="dialogue-box">
+                    <h3 style="color: #E50914; margin-bottom: 15px;">🌈 Holi Celebration</h3>
+                    <p>Miracles do happen—Raajiv actually attended a party! Turns out all it took was some Holi colors and good music to get him vibing. Such a fun day! 🌈🔥</p>
+                </div>
+
+                <div class="dialogue-box" style="border-color: #8a8a8a;">
+                    <p style="line-height: 1.7;">
+                        Three memories recovered.<br>
+                        Three moments that became something more.<br>
+                        But none of them explain the case.<br>
+                        <strong style="color: #ff6b6b;">The answer lies beyond the memories.</strong>
+                    </p>
+                </div>
+
+                <button class="btn" id="to-shinigami">CONFRONT THE SHINIGAMI 👹</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Shinigami Interrogation -->
+        <div class="step" id="step4">
+            <div class="death-note-card">
+                <h1>SHINIGAMI INTERROGATION</h1>
+
+                <div class="shinigami-avatar" id="shinigami">
+                    👹
+                </div>
+
+                <div class="dialogue-box">
+                    <div class="typewriter" id="shinigami-intro"></div>
+                </div>
+
+                <div id="question1" class="hidden">
+                    <div class="dialogue-box">
+                        <p style="font-size: 1.2em;">Who always insists on taking the driver's seat whenever you go out?</p>
+                    </div>
+                    <div class="choice-buttons">
+                        <button class="choice-btn" data-answer="christy">Christy</button>
+                        <button class="choice-btn" data-answer="raajiv">Raajiv</button>
+                    </div>
+                    <div id="q1-response" class="dialogue-box hidden"></div>
+                </div>
+
+                <button class="btn hidden" id="q1-continue">CONTINUE →</button>
+            </div>
+        </div>
+
+        <!-- STEP 4 (Q2): Shinigami Second Question -->
+        <div class="step" id="step4q2">
+            <div class="death-note-card">
+                <h1>SHINIGAMI INTERROGATION</h1>
+
+                <div class="shinigami-avatar">👹</div>
+
+                <div id="question2">
+                    <div class="dialogue-box">
+                        <p style="font-size: 1.2em; font-style: italic; color: #E50914;">"I see a strange emergency protocol written in your bond... Tell me, human:"</p>
+                        <p style="font-size: 1.2em; margin-top: 15px;">When Christy sends out an urgent distress call, how many minutes do you have to respond?</p>
+                    </div>
+                    <div class="choice-buttons" style="flex-direction: column; max-width: 420px; margin: 30px auto;">
+                        <button class="choice-btn" data-answer="15min">A. 15 minutes</button>
+                        <button class="choice-btn" data-answer="8min">B. 8 min</button>
+                        <button class="choice-btn" data-answer="whenever">C. Whenever I feel like it</button>
+                        <button class="choice-btn" data-answer="1hour">D. 1 hour</button>
+                    </div>
+                    <div id="q2-response" class="dialogue-box hidden"></div>
+                </div>
+
+                <button class="btn hidden" id="q2-continue">CONTINUE →</button>
+            </div>
+        </div>
+
+        <!-- STEP 4 REVEAL GATE: Name Kira -->
+        <div class="step" id="step4reveal">
+            <div class="death-note-card" style="text-align: center;">
+                <div class="status-label">[ INTERROGATION COMPLETE ]</div>
+                <div class="crimson-line"></div>
+                <h1>ONE QUESTION REMAINS</h1>
+                <p style="font-size: 1.25em; line-height: 1.8; color: #d8d5c8; margin: 10px 0 18px;">
+                    Every clue. Every memory. Every ridiculous little rule.<br>
+                    They were never pointing toward a person.<br>
+                    They were pointing toward a purpose.<br><br>
+                    The Task Force has recovered enough evidence.<br>
+                    There is only one question left:
+                </p>
+                <p style="font-family: 'Special Elite', monospace; color: #ff1e2d; letter-spacing: 3px; font-size: 1.3em; margin-bottom: 6px; text-shadow: 0 0 14px rgba(229,9,20,0.7);">
+                    WHAT DOES KIRA WANT?
+                </p>
+                <button class="btn" id="to-reveal">REVEAL KIRA'S PURPOSE 🩸</button>
+            </div>
+        </div>
+
+        <!-- STEP 5: Final Reveal -->
+        <div class="step" id="step5">
+            <div class="death-note-card">
+                <div id="investigation-complete" class="hidden">
+                    <div class="status-label reveal-hidden">[ INVESTIGATION STATUS ]</div>
+                    <div class="crimson-line reveal-hidden"></div>
+                    <div class="reveal-text reveal-hidden">ALL EVIDENCE RECOVERED.</div>
+                    <div class="reveal-text reveal-hidden" style="margin-top: 20px;">THE PATTERN IS CLEAR.</div>
+                    <p class="reveal-hidden" style="text-align: center; font-size: 1.25em; margin: 22px 0 0; color: #d8d5c8; font-style: italic;">
+                        "The memories weren't collected to identify a victim."
+                    </p>
+                    <p class="reveal-hidden" style="text-align: center; font-size: 1.25em; margin: 12px 0 0; color: #d8d5c8; font-style: italic;">
+                        "They weren't collected to expose Kira."
+                    </p>
+                    <div class="reveal-text reveal-hidden" style="margin-top: 28px;">THE TARGET WAS NEVER A PERSON.</div>
+                    <div class="reveal-text kira-final reveal-hidden" style="margin-top: 20px;">THE TARGET WAS A WISH.</div>
+                    <p class="reveal-hidden" style="text-align: center; font-size: 1.2em; margin: 26px 0 0; color: #F2F0E6; line-height: 1.7;">
+                        Someone opened this case with a single objective:<br>
+                        to make one particular birthday wish impossible to ignore.
+                    </p>
+                    <button class="btn reveal-hidden" id="to-case-closed">OPEN THE FINAL CASE FILE →</button>
+                </div>
+                <img class="scene-shinigami" src="Death%20Note.jpeg" alt="" aria-hidden="true">
+            </div>
+        </div>
+
+        <!-- STEP 6: Case Closed -->
+        <div class="step" id="step6">
+            <div class="death-note-card" style="text-align: center;">
+                <h1 style="margin-bottom: 25px;">CASE STATUS</h1>
+                <div class="case-closed-meta">
+                    <p><span class="field-label">Subject:</span> RAAJIV</p>
+                    <p><span class="field-label">Case:</span> KIRA BIRTHDAY INCIDENT</p>
+                    <p><span class="field-label">Evidence:</span> RECOVERED ✓</p>
+                    <p><span class="field-label">Objective:</span> IDENTIFIED ✓</p>
+                    <p><span class="field-label">Wish:</span> CLASSIFIED</p>
+                </div>
+                <p style="font-size: 1.2em; line-height: 1.7; color: #d8d5c8; margin-top: 26px;">
+                    The investigation is complete.<br>
+                    The memories have been recovered.<br>
+                    The evidence has been examined.<br>
+                    The motive has been uncovered.<br><br>
+                    But one file remains sealed.<br>
+                    <strong style="color: #ff6b6b;">The final wish.</strong>
+                </p>
+                <button class="btn" id="to-reward">UNSEAL THE FINAL FILE →</button>
+            </div>
+        </div>
+
+        <!-- STEP 7: The Final Page -->
+        <div class="step" id="step7">
+            <div class="death-note-card">
+                <div class="judgment-split">
+                    <div class="death-note-page">
+                    <h1 class="dn-title">THE FINAL PAGE</h1>
+
+                    <div class="dn-entry">
+                        <div class="dn-label">NAME</div>
+                        <div class="dn-value">RAAJIV</div>
+                    </div>
+
+                    <div class="dn-entry">
+                        <div class="dn-label">CASE</div>
+                        <div class="dn-value">BIRTHDAY INCIDENT</div>
+                    </div>
+
+                    <div class="dn-entry">
+                        <div class="dn-label">OBJECTIVE</div>
+                        <div class="dn-value">Make one wish known.</div>
+                    </div>
+
+                    <div class="dn-entry">
+                        <div class="dn-label">EVIDENCE</div>
+                        <div class="dn-value dn-effect-list">
+                            Memories.<br>
+                            Conversations.<br>
+                            Tea breaks.<br>
+                            Bike rides.<br>
+                            Counters.<br>
+                            Random nonsense.<br>
+                            And everything in between.
+                        </div>
+                    </div>
+
+                    <div class="dn-entry">
+                        <div class="dn-label">WISH DETECTED</div>
+                        <div class="dn-value" style="font-style: italic; color: #ff8080;">"To keep this friendship exactly where it belongs — in the future."</div>
+                    </div>
+
+                    <div class="dn-value dn-effect-list" style="margin: 10px 0;">
+                        More tea breaks.<br>
+                        More counters.<br>
+                        More random conversations.<br>
+                        More bike rides.<br>
+                        More memories that nobody bothers to photograph.<br>
+                        And, unfortunately for you... no escape.
+                    </div>
+
+                    <div class="dn-status">♾️ LIFETIME SENTENCE</div>
+
+                    <div class="dn-fine">
+                        Sentence duration: Indefinite.<br>
+                        Cancellation: Denied.<br>
+                        Escape route: Not found.<br>
+                        Birthday wish: GRANTED.
+                    </div>
+
+                    <p style="text-align: center; margin-top: 18px; font-size: 1.3em; color: #F2F0E6;">Happy Birthday, Raajiv. 🖤</p>
+                    </div>
+                    <div class="judgment-shinigami">
+                        <img src="Death%20Note.jpeg" alt="Kira and the Shinigami Ryuk delivering the verdict">
+                    </div>
+                </div>
+
+                <button class="btn" id="to-final">OPEN YOUR FINAL FILE →</button>
+            </div>
+        </div>
+
+        <!-- STEP 8: Final Birthday Message -->
+        <div class="step" id="step8">
+            <div class="death-note-card">
+                <div class="final-file-header">
+                    <div class="status-label" style="margin-bottom: 6px;">FINAL FILE UNSEALED</div>
+                    <div class="ff-meta">CASE #0210 · STATUS: CLOSED · WISH: GRANTED · SUBJECT: RAAJIV</div>
+                </div>
+
+                <h1 class="birthday-title">HAPPY BIRTHDAY, RAAJIV ❤️</h1>
+
+                <div class="birthday-message" style="text-align: left;">
+                    Dei Raajiv,<br><br>
+                    Never knew that at my 30 yrs I will find a true friend from office. I have always admired your patience when you listen to all my rants. Sometimes when you give matured advice to me, I'll always think why this guy is sometimes crazy when it comes to him.<br><br>
+                    I'm a huge fan of your driving when you drive peak fast yet very safe. You are one of the persons whom I can trust, but you will trust me and sit on my bike and you like it.<br><br>
+                    Missing your counters these days and our tea times. Let's resume it soon. I'll be your great support system and you can trust me with anything. You are locked for a lifetime friendship bond.<br><br>
+                    Happy birthday wonderful human and an evergreen forest! 🌲❤️
+                </div>
+
+                <div class="birthday-photo">
+                    <img src="Ibaco.jpeg" alt="Christy and Raajiv" onclick="openBirthdayPhoto()">
+                </div>
+
+                <div class="birthday-closing">CASE CLOSED. 🖤</div>
+                <div class="birthday-end">THE STORY CONTINUES.</div>
+                <div class="birthday-infinity">∞</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+            <img id="lightbox-img" src="" alt="">
+            <div class="lightbox-caption" id="lightbox-caption"></div>
+        </div>
+    </div>
+
+    <script>
+        // Rain Animation
+        const canvas = document.getElementById('rain-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const raindrops = [];
+        const raindropCount = 100;
+
+        class Raindrop {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.speed = Math.random() * 3 + 2;
+                this.length = Math.random() * 20 + 10;
+            }
+
+            fall() {
+                this.y += this.speed;
+                if (this.y > canvas.height) {
+                    this.y = -this.length;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.strokeStyle = 'rgba(229, 9, 20, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.length);
+                ctx.stroke();
+            }
+        }
+
+        for (let i = 0; i < raindropCount; i++) {
+            raindrops.push(new Raindrop());
+        }
+
+        function animateRain() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            raindrops.forEach(drop => {
+                drop.fall();
+                drop.draw();
+            });
+            requestAnimationFrame(animateRain);
+        }
+
+        animateRain();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Background Music
+        const bgm = document.getElementById('bgm');
+        let audioMuted = false;
+        const audioToggle = document.getElementById('audio-toggle');
+        
+        // Try to autoplay (may be blocked by browser)
+        window.addEventListener('load', () => {
+            bgm.volume = 0.3;
+            bgm.play().catch(() => {
+                // Autoplay blocked, wait for user interaction
+                document.body.addEventListener('click', () => {
+                    if (!audioMuted) {
+                        bgm.play();
+                    }
+                }, { once: true });
+            });
+        });
+        
+        audioToggle.addEventListener('click', () => {
+            audioMuted = !audioMuted;
+            if (audioMuted) {
+                bgm.pause();
+                audioToggle.textContent = '🔇';
+            } else {
+                bgm.play();
+                audioToggle.textContent = '🔊';
+            }
+            audioToggle.classList.toggle('muted');
+        });
+
+        // Typewriter Effect
+        function typewriter(element, text, speed = 50, callback = null) {
+            let i = 0;
+            element.innerHTML = '';
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed + Math.random() * 30);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            
+            type();
+        }
+
+        // Step Navigation
+        function showStep(stepNumber) {
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            const el = document.getElementById(`step${stepNumber}`);
+            if (el) el.classList.add('active');
+            updateIndicator(stepNumber);
+            const c = document.querySelector('.container');
+            if (c) c.scrollTop = 0;
+        }
+
+        // === Task Force phase indicator ===
+        const PHASE_OF = {
+            '1': 1, '2': 2, '2secret': 2, '2decrypt': 2,
+            '3': 3, '3reveal': 3, '4': 4, '4q2': 4, '4reveal': 4,
+            '5': 5, '6': 6, '7': 7, '8': 8
+        };
+        const TOTAL_PHASES = 8;
+
+        (function buildPhaseDots() {
+            const wrap = document.getElementById('tf-steps');
+            if (!wrap) return;
+            for (let i = 1; i <= TOTAL_PHASES; i++) {
+                const d = document.createElement('span');
+                d.className = 'tf-dot';
+                d.dataset.phase = i;
+                wrap.appendChild(d);
+            }
+        })();
+
+        function updateIndicator(stepKey) {
+            const phase = PHASE_OF[String(stepKey)] || 1;
+            document.querySelectorAll('#tf-steps .tf-dot').forEach(dot => {
+                const p = parseInt(dot.dataset.phase, 10);
+                dot.classList.toggle('active', p === phase);
+                dot.classList.toggle('done', p < phase);
+            });
+        }
+
+        updateIndicator(1);
+
+        // Flash Effect
+        function flashScreen() {
+            document.body.classList.add('flash');
+            setTimeout(() => {
+                document.body.classList.remove('flash');
+            }, 900);
+        }
+
+        // STEP 1: Intro
+        const introText = "A name has been written in the Death Note.\n\nRAAJIV.\n\nBut there is no cause of death.\n\nNo sentence.\n\nNo punishment.\n\nOnly one unfinished instruction:\n\nFIND THE WISH.\n\nBefore the final page is revealed, you have one chance to uncover the truth.";
+        
+        setTimeout(() => {
+            typewriter(document.getElementById('intro-text'), introText, 40);
+        }, 500);
+
+        document.getElementById('enter-case').addEventListener('click', () => {
+            flashScreen();
+            playClickSound();
+            setTimeout(() => {
+                showStep(2);
+            }, 300);
+        });
+
+        // === Web Audio: subtle cinematic SFX (no external files) ===
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+                catch (e) { audioCtx = null; }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
+            return audioCtx;
+        }
+        // Browsers block autoplay — initialize audio on the first user interaction.
+        document.addEventListener('pointerdown', initAudio);
+        document.addEventListener('keydown', initAudio);
+
+        function tone({ freq = 440, type = 'sine', dur = 0.15, gain = 0.2, slideTo = null, delay = 0 }) {
+            const ctx = initAudio();
+            if (!ctx) return;
+            const t0 = ctx.currentTime + delay;
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, t0);
+            if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(gain, t0 + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            osc.start(t0);
+            osc.stop(t0 + dur + 0.05);
+        }
+
+        function playClickSound() { tone({ freq: 760, type: 'sine', dur: 0.09, gain: 0.16 }); }
+        function playHeartbeat() {
+            tone({ freq: 70, type: 'sine', dur: 0.18, gain: 0.33 });
+            tone({ freq: 58, type: 'sine', dur: 0.22, gain: 0.28, delay: 0.26 });
+        }
+        function playDramatic() {
+            tone({ freq: 170, type: 'sawtooth', dur: 0.7, gain: 0.10, slideTo: 55 });
+            tone({ freq: 80, type: 'sine', dur: 0.8, gain: 0.12 });
+        }
+        function playReveal() {
+            tone({ freq: 110, type: 'triangle', dur: 1.1, gain: 0.15, slideTo: 420 });
+            tone({ freq: 55, type: 'sine', dur: 1.2, gain: 0.18 });
+            tone({ freq: 240, type: 'sawtooth', dur: 0.5, gain: 0.09, slideTo: 90, delay: 0.9 });
+        }
+
+        // Prevent overlapping transitions on rapid / double clicks
+        let navLock = false;
+        function guard() {
+            if (navLock) return false;
+            navLock = true;
+            setTimeout(() => { navLock = false; }, 900);
+            return true;
+        }
+
+        // Brief screen shake for a major reveal (respects reduced-motion)
+        function screenShake(stepId) {
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const card = document.querySelector(`#${stepId} .death-note-card`);
+            if (!card) return;
+            card.style.animation = 'shake 0.4s';
+            setTimeout(() => { card.style.animation = ''; }, 450);
+        }
+
+        // STEP 2: Clue #01 — Stage 1 (BLANKET) + Stage 2 (RJ SECRET)
+
+        // STAGE 1: Verify the memory (answer: BLANKET)
+        document.getElementById('verify-memory').addEventListener('click', () => {
+            const answer = document.getElementById('memory-answer').value.trim().toLowerCase();
+            const messageDiv = document.getElementById('clue1-message');
+
+            if (answer === 'blanket') {
+                playClickSound();
+                messageDiv.innerHTML = '';
+                flashScreen();
+                setTimeout(() => {
+                    showStep('2secret');
+                    const stage2Intro = "MEMORY RECOVERED.\n\nInteresting.\n\nThe first piece of evidence was never a photograph.\n\nIt was a memory.\n\nAnd memories have a strange habit...\n\nThey reveal more than they were meant to.";
+                    typewriter(document.getElementById('stage2-intro'), stage2Intro, 32);
+                    setTimeout(() => document.getElementById('secret-code').focus(), 400);
+                }, 500);
+            } else {
+                messageDiv.innerHTML = '<div class="error-message">✗ MEMORY REJECTED<br>That isn\'t what the evidence remembers.</div>';
+                messageDiv.classList.add('shake');
+                setTimeout(() => messageDiv.classList.remove('shake'), 500);
+            }
+        });
+
+        // Allow Enter key to submit the memory answer
+        document.getElementById('memory-answer').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('verify-memory').click();
+        });
+
+        // SECRET CODE SCENE: Decrypt with the secret code (key: RJ SECRET — ignores case & spaces)
+        function normalizeCode(value) {
+            return value.replace(/\s+/g, '').toLowerCase();
+        }
+
+        document.getElementById('decrypt-file').addEventListener('click', () => {
+            const key = normalizeCode(document.getElementById('secret-code').value);
+            const messageDiv = document.getElementById('decrypt-message');
+
+            if (key === 'rjsecret') {
+                playClickSound();
+                messageDiv.innerHTML = '';
+                const panel = document.getElementById('encrypted-panel');
+                panel.classList.add('unlocking');
+                const lockIndicator = document.querySelector('.access-locked');
+                if (lockIndicator) {
+                    lockIndicator.innerHTML = '<span class="lock-dot" style="background:#0f0; box-shadow:0 0 10px #0f0;"></span> ACCESS GRANTED';
+                    lockIndicator.style.color = '#5fff5f';
+                }
+                flashScreen();
+
+                setTimeout(() => {
+                    showStep('2decrypt');
+                    const unlockIntro = "You remembered the first clue.\n\nYou found the key.\n\nThe hidden memory can now be revealed.";
+                    typewriter(document.getElementById('unlock-intro'), unlockIntro, 32);
+                }, 1100);
+            } else {
+                messageDiv.innerHTML = '<div class="error-message">✗ ACCESS DENIED<br>The secret doesn\'t match the investigator\'s records.</div>';
+                const panel = document.getElementById('encrypted-panel');
+                panel.style.animation = 'shake 0.5s';
+                setTimeout(() => { panel.style.animation = 'panelPulse 2.5s ease-in-out infinite'; }, 500);
+            }
+        });
+
+        // Allow Enter key to submit the secret code
+        document.getElementById('secret-code').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('decrypt-file').click();
+        });
+
+        // CONTINUE INVESTIGATION -> Clue #02 (Memory Vault)
+        document.getElementById('to-vault').addEventListener('click', () => {
+            playClickSound();
+            showStep(3);
+        });
+
+        // STEP 3: Memory Vault - Drag and Drop Ordering
+        let draggedElement = null;
+        let draggedIndex = null;
+
+        const sortableContainer = document.getElementById('sortable-photos');
+        const photoCards = sortableContainer.querySelectorAll('.photo-card');
+        
+        photoCards.forEach((card, index) => {
+            card.addEventListener('dragstart', function(e) {
+                draggedElement = this;
+                draggedIndex = Array.from(sortableContainer.children).indexOf(this);
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                console.log('Drag started:', this.getAttribute('data-memory'));
+            });
+
+            card.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                console.log('Drag ended');
+            });
+
+            card.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+
+            card.addEventListener('drop', function(e) {
+                e.preventDefault();
+                if (draggedElement !== this) {
+                    const allCards = Array.from(sortableContainer.children);
+                    const draggedIdx = allCards.indexOf(draggedElement);
+                    const targetIdx = allCards.indexOf(this);
+                    
+                    console.log('Swapping:', draggedIdx, 'with', targetIdx);
+                    
+                    if (draggedIdx < targetIdx) {
+                        this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                    } else {
+                        this.parentNode.insertBefore(draggedElement, this);
+                    }
+                    
+                    updateOrderNumbers();
+                }
+            });
+
+            card.addEventListener('dragenter', function(e) {
+                e.preventDefault();
+                if (draggedElement !== this) {
+                    this.style.borderColor = '#FFD700';
+                }
+            });
+
+            card.addEventListener('dragleave', function() {
+                this.style.borderColor = '#E50914';
+            });
+        });
+
+        function updateOrderNumbers() {
+            const cards = sortableContainer.querySelectorAll('.photo-card');
+            cards.forEach((card, index) => {
+                const orderNum = card.querySelector('.order-number');
+                if (orderNum) {
+                    orderNum.textContent = index + 1;
+                }
+                card.style.borderColor = '#E50914';
+            });
+            console.log('Order updated');
+        }
+
+        function checkMemoryOrder() {
+            const cards = sortableContainer.querySelectorAll('.photo-card');
+            const currentOrder = Array.from(cards).map(card => card.getAttribute('data-memory'));
+            const correctOrder = ['pind', 'concert', 'holi'];
+            const isCorrect = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
+
+            if (isCorrect) {
+                playClickSound();
+                // Borders turn green, then navigate to the Memories Unlocked page
+                cards.forEach(card => {
+                    card.style.borderColor = '#0f0';
+                    card.style.boxShadow = '0 0 25px rgba(0, 255, 0, 0.6)';
+                    card.setAttribute('draggable', 'false');
+                    card.style.cursor = 'default';
+                });
+                flashScreen();
+                setTimeout(() => {
+                    showStep('3reveal');
+                }, 900);
+            } else {
+                // Wrong: clear feedback — screen flicker + red borders/glow + shake, then reset
+                flashScreen();
+                cards.forEach(card => {
+                    card.style.borderColor = '#f00';
+                    card.style.boxShadow = '0 0 24px rgba(255, 0, 0, 0.7)';
+                });
+                sortableContainer.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    sortableContainer.style.animation = '';
+                    cards.forEach(card => {
+                        card.style.borderColor = '#E50914';
+                        card.style.boxShadow = '';
+                    });
+                }, 1000);
+            }
+        }
+
+        document.getElementById('check-order').addEventListener('click', checkMemoryOrder);
+
+        document.getElementById('to-shinigami').addEventListener('click', () => {
+            showStep(4);
+            const shinigamiText = "Interesting... You actually made it this far, Raajiv.\n\nTwo final questions stand between you and the truth...";
+            typewriter(document.getElementById('shinigami-intro'), shinigamiText, 40, () => {
+                setTimeout(() => {
+                    document.getElementById('question1').classList.remove('hidden');
+                }, 1000);
+            });
+        });
+
+        // STEP 4: Shinigami Questions
+        let q1Answered = false;
+        let q2Answered = false;
+
+        document.querySelectorAll('#question1 .choice-btn').forEach(btn => {
+            console.log('Attaching click listener to button:', btn.textContent);
+            btn.addEventListener('click', function(e) {
+                console.log('Button clicked!', this.textContent);
+                e.stopPropagation();
+                
+                if (q1Answered) {
+                    console.log('Question already answered, ignoring click');
+                    return;
+                }
+                
+                const answer = this.getAttribute('data-answer');
+                const responseDiv = document.getElementById('q1-response');
+                console.log('Answer selected:', answer);
+                
+                if (answer === 'christy') {
+                    this.classList.add('correct');
+                    responseDiv.innerHTML = "Correct. So the evidence confirms one thing: you two have collected far too many ordinary moments together.";
+                    responseDiv.classList.remove('hidden');
+                    q1Answered = true;
+                    
+                    // Disable all buttons in question 1
+                    document.querySelectorAll('#question1 .choice-btn').forEach(b => {
+                        b.style.pointerEvents = 'none';
+                        b.style.opacity = '0.6';
+                    });
+
+                    setTimeout(() => {
+                        document.getElementById('q1-continue').classList.remove('hidden');
+                    }, 700);
+                } else {
+                    this.classList.add('wrong');
+                    setTimeout(() => this.classList.remove('wrong'), 500);
+                }
+            });
+        });
+
+        document.querySelectorAll('#question2 .choice-btn').forEach(btn => {
+            console.log('Attaching click listener to Q2 button:', btn.textContent);
+            btn.addEventListener('click', function(e) {
+                console.log('Q2 Button clicked!', this.textContent);
+                e.stopPropagation();
+                
+                if (q2Answered) {
+                    console.log('Question 2 already answered, ignoring click');
+                    return;
+                }
+                
+                const answer = this.getAttribute('data-answer');
+                const responseDiv = document.getElementById('q2-response');
+                console.log('Q2 Answer selected:', answer);
+                
+                if (answer === '8min') {
+                    this.classList.add('correct');
+                    responseDiv.innerHTML = "HAHAHA! 8 minutes. An absurdly specific rule for an ordinary friendship. Yet you remembered it. Interesting... Very interesting.";
+                    responseDiv.classList.remove('hidden');
+                    q2Answered = true;
+                    
+                    // Disable all buttons in question 2
+                    document.querySelectorAll('#question2 .choice-btn').forEach(b => {
+                        b.style.pointerEvents = 'none';
+                        b.style.opacity = '0.6';
+                    });
+
+                    setTimeout(() => {
+                        document.getElementById('q2-continue').classList.remove('hidden');
+                    }, 700);
+                } else {
+                    this.classList.add('wrong');
+                    setTimeout(() => this.classList.remove('wrong'), 500);
+                }
+            });
+        });
+
+        // Shinigami CONTINUE buttons (user-paced navigation)
+        document.getElementById('q1-continue').addEventListener('click', () => {
+            if (!guard()) return;
+            playClickSound();
+            showStep('4q2');
+        });
+
+        document.getElementById('q2-continue').addEventListener('click', () => {
+            if (!guard()) return;
+            flashScreen();
+            playDramatic();
+            showStep('4reveal');
+        });
+
+        // STEP 5: Kira Reveal — progressive cinematic sequence
+        document.getElementById('to-reveal').addEventListener('click', () => {
+            if (!guard()) return;
+            playDramatic();
+            showStep(5);
+            setTimeout(() => {
+                const panel = document.getElementById('investigation-complete');
+                panel.classList.remove('hidden');
+                const items = panel.querySelectorAll('.reveal-hidden');
+                const delays = [400, 1200, 2100, 3300, 4600, 5900, 7300, 8800, 10200, 11300];
+                items.forEach((el, i) => {
+                    setTimeout(() => {
+                        el.classList.add('reveal-in');
+                        if (el.classList.contains('kira-final')) {
+                            playReveal();
+                            screenShake('step5');
+                        } else if (el.classList.contains('reveal-text')) {
+                            playHeartbeat();
+                        }
+                    }, delays[i] || (500 + i * 1200));
+                });
+            }, 900);
+        });
+
+        // STEP 5 -> STEP 6 (Case Closed)
+        document.getElementById('to-case-closed').addEventListener('click', () => {
+            if (!guard()) return;
+            flashScreen();
+            playDramatic();
+            setTimeout(() => showStep(6), 400);
+        });
+
+        // STEP 6 -> STEP 7 (Final Sentence / Reward)
+        document.getElementById('to-reward').addEventListener('click', () => {
+            if (!guard()) return;
+            flashScreen();
+            playDramatic();
+            playHeartbeat();
+            setTimeout(() => showStep(7), 400);
+        });
+
+        // STEP 7 -> STEP 8 (Final Birthday Message)
+        document.getElementById('to-final').addEventListener('click', () => {
+            if (!guard()) return;
+            flashScreen();
+            playReveal();
+            setTimeout(() => {
+                showStep(8);
+                createConfetti();
+            }, 400);
+        });
+
+        // Confetti
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = ['#E50914', '#F2F0E6', '#FFD700'][Math.floor(Math.random() * 3)];
+                    confetti.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 100);
+            }
+        }
+
+        // Lightbox
+        const photos = [
+            {
+                src: "PIND.jpeg",
+                caption: "Pind Fine Dining - First dining experience after endless local food runs. Average food, but unforgettable conversations with the best. 🍽️🖤"
+            },
+            {
+                src: "AR_Concert.jpeg",
+                caption: "AR Rahman Concert - First person I thought of when I got the tickets. Same music taste, same crazy energy, and the legendary night I saw you dance for the first time. Such a core memory! 🖤✨"
+            },
+            {
+                src: "Holi.jpeg",
+                caption: "Holi Celebration - Miracles do happen—Raajiv actually attended a party! Turns out all it took was some Holi colors and good music to get him vibing. Such a fun day! 🌈🔥"
+            }
+        ];
+
+        function openLightbox(index) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            const caption = document.getElementById('lightbox-caption');
+            
+            img.src = photos[index].src;
+            caption.textContent = photos[index].caption;
+            lightbox.classList.add('active');
+        }
+
+        function openBirthdayPhoto() {
+            const lightbox = document.getElementById('lightbox');
+            document.getElementById('lightbox-img').src = 'Ibaco.jpeg';
+            document.getElementById('lightbox-caption').textContent = 'Christy & Raajiv 🖤 — locked for a lifetime friendship bond.';
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
